@@ -1,0 +1,66 @@
+import { MenuItemService } from './../../services/menu-item.service';
+import { Component, OnInit, Input } from '@angular/core';
+import { FoodItem } from '../item-info/food-item';
+import { FoodService } from '../food.service';
+import { CartService } from 'src/app/shopping/cart/cart.service';
+import { Router } from '@angular/router';
+import { AuthService } from 'src/app/site/auth.service';
+
+
+@Component({
+  selector: 'app-menu',
+  templateUrl: './menu.component.html',
+  styleUrls: ['./menu.component.css']
+})
+export class MenuComponent implements OnInit {
+
+
+fullFoodItems:FoodItem[]=[];
+filteredFoodItems:FoodItem[]=[];
+
+
+  constructor(private foodService: FoodService,
+     private cartService: CartService,
+     private router:Router,
+     private authService: AuthService,
+     private menuItemService: MenuItemService
+     ) 
+     
+     { }
+
+
+  foodname:string;
+
+
+  ngOnInit() {
+
+
+    this.foodService.getFoodItems()
+      .subscribe(
+        (data:FoodItem[]) =>  {
+        this.fullFoodItems = [...data];
+        this.filteredFoodItems = this.fullFoodItems;
+      }
+      );
+
+
+      this.foodService.getFilter().subscribe(
+        (title: string) => {
+         this.filteredFoodItems = this.foodService.getFoodItemsFiltered(title,this.fullFoodItems);
+      }
+      );
+    }
+
+
+    addToCart(itemId:number){
+
+      if(!this.authService.loggedInUser){
+          this.router.navigate(['/cart']);
+      }
+      else
+      {
+        this.cartService.addToCartRest(itemId,1).subscribe(data=>{
+        });
+      }
+    }
+}
